@@ -74,7 +74,13 @@
 			<artifactId>spring-boot-starter-security-oauth2-authorization-server-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+    </dependencies>
 
 	<build>
 		<plugins>

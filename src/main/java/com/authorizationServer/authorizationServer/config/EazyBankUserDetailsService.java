@@ -1,6 +1,6 @@
 package com.authorizationServer.authorizationServer.config;
 
-import com.authorizationServer.authorizationServer.config.repository.CustomerRepository;
+import com.authorizationServer.authorizationServer.repository.CustomerRepository;
 import com.authorizationServer.authorizationServer.model.Customer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;

@@ -1,4 +1,4 @@
-package com.authorizationServer.authorizationServer.config.repository;
+package com.authorizationServer.authorizationServer.repository;
 
 import com.authorizationServer.authorizationServer.model.Customer;
 import org.springframework.data.repository.CrudRepository;

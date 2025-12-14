@@ -9,18 +9,20 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -28,9 +30,11 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 import java.security.KeyPair;
@@ -38,33 +42,37 @@ import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+
 
 @Configuration
 @EnableWebSecurity
 public class ProjectSecurityConfig {
+
     @Bean
     @Order(1)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http,
+                                                                      RegisteredClientRepository registeredClientRepository,
+                                                                      AuthorizationServerSettings authorizationServerSettings) throws Exception {
 
-        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
+        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
+                new OAuth2AuthorizationServerConfigurer();
 
         http
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
                 .with(authorizationServerConfigurer, (authorizationServer) ->
                         authorizationServer
-                                .oidc(Customizer.withDefaults())    // Enable OpenID Connect 1.0
+                                .oidc(Customizer.withDefaults())	// Enable OpenID Connect 1.0
                 )
                 .authorizeHttpRequests((authorize) ->
                         authorize
                                 .anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf.ignoringRequestMatchers(
-                        authorizationServerConfigurer.getEndpointsMatcher()
-                ))
-
                 // Redirect to the login page when not authenticated from the
                 // authorization endpoint
                 .exceptionHandling((exceptions) -> exceptions
@@ -72,9 +80,9 @@ public class ProjectSecurityConfig {
                                 new LoginUrlAuthenticationEntryPoint("/login"),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
-                )
-                .oauth2ResourceServer(((httpSecurityOAuth2ResourceServerConfigurer) -> httpSecurityOAuth2ResourceServerConfigurer
-                        .jwt(Customizer.withDefaults())));
+                )        // Accept access tokens for User Info and/or Client Registration
+                .oauth2ResourceServer((resourceServer) -> resourceServer
+                        .jwt(Customizer.withDefaults()));
 
         return http.build();
     }
@@ -85,37 +93,62 @@ public class ProjectSecurityConfig {
             throws Exception {
         http
                 .authorizeHttpRequests((authorize) -> authorize
-                        .anyRequest().authenticated())
+                        .anyRequest().authenticated()
+                )
+                // Form login handles the redirect to the login page from the
+                // authorization server filter chain
                 .formLogin(Customizer.withDefaults());
 
         return http.build();
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails userDetails = User.withDefaultPasswordEncoder()
-                .username("user")
-                .password("password")
-                .roles("USER")
-                .build();
-
-        return new InMemoryUserDetailsManager(userDetails);
-    }
-
-    @Bean
     public RegisteredClientRepository registeredClientRepository() {
-        RegisteredClient oidcClient = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId("oidc-client")
+        RegisteredClient clientCredClient = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("eazybankapi")
                 .clientSecret("{noop}VxubZgAXyyTq9lGjj3qGvWNsHtE4SqTq")
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .scopes(scopeConfig -> scopeConfig.addAll(List.of(OidcScopes.OPENID, "ADMIN", "USER")))
+                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofMinutes(10))
+                        .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED).build()).build();
+
+        RegisteredClient introspectClient = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("eazybankintrospect")
+                .clientSecret("{noop}c1BK9Bg2REeydBbvUoUeKCbD2bvJzXGj")
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .scopes(scopeConfig -> scopeConfig.addAll(List.of(OidcScopes.OPENID)))
+                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofMinutes(10))
+                        .accessTokenFormat(OAuth2TokenFormat.REFERENCE).build()).build();
+
+        RegisteredClient authCodeClient = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("eazybankclient")
+                .clientSecret("{noop}Qw3rTy6UjMnB9zXcV2pL0sKjHn5TxQqB")
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .scopes(config ->config.addAll(List.of(OidcScopes.OPENID,"ADMIN","USER")))
+                .redirectUri("https://oauth.pstmn.io/v1/callback")
+                .scope(OidcScopes.OPENID).scope(OidcScopes.EMAIL)
                 .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofMinutes(10))
-                .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED).build()).build();
+                        .refreshTokenTimeToLive(Duration.ofHours(8)).reuseRefreshTokens(false)
+                        .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED).build()).build();
 
+        RegisteredClient pkceClient = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("eazypublicclient")
+                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .redirectUri("https://oauth.pstmn.io/v1/callback")
+                .scope(OidcScopes.OPENID).scope(OidcScopes.EMAIL)
+                .clientSettings(ClientSettings.builder().requireProofKey(true).build())
+                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofMinutes(10))
+                        .refreshTokenTimeToLive(Duration.ofHours(8)).reuseRefreshTokens(false)
+                        .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED).build()).build();
 
-        return new InMemoryRegisteredClientRepository(oidcClient);
+        return new InMemoryRegisteredClientRepository(clientCredClient, introspectClient, authCodeClient, pkceClient);
     }
 
     @Bean
@@ -137,8 +170,7 @@ public class ProjectSecurityConfig {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
             keyPairGenerator.initialize(2048);
             keyPair = keyPairGenerator.generateKeyPair();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
         return keyPair;
@@ -152,6 +184,41 @@ public class ProjectSecurityConfig {
     @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
         return AuthorizationServerSettings.builder().build();
+    }
+
+    @Bean
+    public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer() {
+        return (context) -> {
+            if (context.getTokenType().equals(OAuth2TokenType.ACCESS_TOKEN)) {
+                context.getClaims().claims((claims) -> {
+                    if (context.getAuthorizationGrantType().equals(AuthorizationGrantType.CLIENT_CREDENTIALS)) {
+                        Set<String> roles = context.getClaims().build().getClaim("scope");
+                        claims.put("roles", roles);
+                    } else if (context.getAuthorizationGrantType().equals(AuthorizationGrantType.AUTHORIZATION_CODE)) {
+                        Set<String> roles = AuthorityUtils.authorityListToSet(context.getPrincipal().getAuthorities())
+                                .stream()
+                                .map(c -> c.replaceFirst("^ROLE_", ""))
+                                .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
+                        claims.put("roles", roles);
+                    }
+                });
+            }
+        };
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    /**
+     * From Spring Security 6.3 version
+     *
+     * @return
+     */
+    @Bean
+    public CompromisedPasswordChecker compromisedPasswordChecker() {
+        return new HaveIBeenPwnedRestApiPasswordChecker();
     }
 
 }
