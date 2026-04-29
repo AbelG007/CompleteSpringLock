@@ -1,5 +1,6 @@
 package com.authorizationServer.authorizationServer.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcOperations;
@@ -12,6 +13,12 @@ import org.springframework.security.oauth2.server.authorization.client.JdbcRegis
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 
 @Configuration
+@ConditionalOnProperty(
+        prefix = "app-security",
+        name = "mode",
+        havingValue = "authorization-server",
+        matchIfMissing = true
+)
 public class AuthorizationServerPersistenceConfig {
 
     @Bean

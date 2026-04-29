@@ -5,6 +5,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
@@ -25,6 +26,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Configuration
+@ConditionalOnProperty(
+        prefix = "app-security",
+        name = "mode",
+        havingValue = "authorization-server",
+        matchIfMissing = true
+)
 public class TokenSecurityConfig {
 
     @Bean
