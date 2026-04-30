@@ -1,7 +1,7 @@
 package com.authorizationServer.authorizationServer;
 
-import com.authorizationServer.authorizationServer.config.AppSecurityProperties;
-import com.authorizationServer.authorizationServer.config.SecurityMode;
+import com.authorizationServer.authorizationServer.security.properties.AppSecurityProperties;
+import com.authorizationServer.authorizationServer.security.properties.SecurityMode;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,4 +1,4 @@
-package com.authorizationServer.authorizationServer.config;
+package com.authorizationServer.authorizationServer.security.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

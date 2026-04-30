@@ -1,4 +1,4 @@
-package com.authorizationServer.authorizationServer.model;
+package com.authorizationServer.authorizationServer.customer.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

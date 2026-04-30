@@ -1,4 +1,4 @@
-package com.authorizationServer.authorizationServer.config;
+package com.authorizationServer.authorizationServer.security.properties;
 
 public enum SecurityMode {
     NONE,

@@ -13,7 +13,7 @@ What it already has:
 - Database-backed users via `Customer`, `Authority`, and `UserDetailsServiceImpl`
 - Password hashing via Spring Security delegating password encoder
 - Compromised password checking via Have I Been Pwned
-- Profile-specific database config for `dev`, `test`, and `prod`
+- Profile-specific database config for `local`, `dev`, `test`, and `prod`
 - Flyway migration for users and authorities
 
 What it should become:

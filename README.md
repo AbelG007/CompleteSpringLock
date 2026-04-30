@@ -4,11 +4,12 @@ This project is being upgraded into a standalone OAuth2/OIDC authorization serve
 
 ## Profiles
 
-- `dev`: local MySQL-backed development profile
+- `local`: default H2-backed local profile for running the app without MySQL
+- `dev`: explicit MySQL-backed development profile
 - `test`: isolated H2-backed test profile
 - `prod`: strict production profile with required externalized database settings
 
-The default profile is `dev`.
+The default profile is `local`.
 
 ## Required Environment Variables
 
@@ -16,6 +17,11 @@ The default profile is `dev`.
 
 - `AS_SERVER_PORT` optional, defaults to `9000`
 - `AUTH_SERVER_ISSUER` optional in `dev`, required in `prod`
+
+### Local
+
+- No database variables required
+- `AUTH_SERVER_ISSUER` optional, defaults to `http://127.0.0.1:9000`
 
 ### Dev
 
@@ -39,6 +45,8 @@ The default profile is `dev`.
 ```bash
 sh mvnw spring-boot:run
 ```
+
+This now uses the `local` profile by default.
 
 ## Tests
 

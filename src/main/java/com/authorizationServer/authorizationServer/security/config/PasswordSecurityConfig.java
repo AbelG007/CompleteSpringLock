@@ -1,4 +1,4 @@
-package com.authorizationServer.authorizationServer.config;
+package com.authorizationServer.authorizationServer.security.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,4 +26,3 @@ public class PasswordSecurityConfig {
     }
 
 }
-

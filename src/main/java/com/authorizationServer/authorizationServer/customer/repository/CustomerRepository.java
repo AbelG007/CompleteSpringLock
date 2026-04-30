@@ -1,6 +1,6 @@
-package com.authorizationServer.authorizationServer.repository;
+package com.authorizationServer.authorizationServer.customer.repository;
 
-import com.authorizationServer.authorizationServer.model.Customer;
+import com.authorizationServer.authorizationServer.customer.domain.Customer;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

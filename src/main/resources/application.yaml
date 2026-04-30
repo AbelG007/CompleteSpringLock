@@ -2,7 +2,7 @@ spring:
   application:
     name: authorizationServer
   profiles:
-    default: dev
+    default: local
   jpa:
     hibernate:
       ddl-auto: validate
@@ -16,9 +16,9 @@ server:
   port: ${AS_SERVER_PORT:9000}
   forward-headers-strategy: framework
 
-app:
-  authorization-server:
-    issuer: ${AUTH_SERVER_ISSUER:http://127.0.0.1:${server.port}}
+
+
+
 
 management:
   endpoints:
@@ -39,3 +39,6 @@ logging:
 app-security:
   enabled: true
   mode: authorization-server
+  jwt-resource-server:
+    issuer-uri: ${APP_SECURITY_JWT_RESOURCE_SERVER_ISSUER_URI:http://127.0.0.1:9000}
+    admin-path: ${APP_SECURITY_JWT_RESOURCE_SERVER_ADMIN_PATH:/api/admin/**}

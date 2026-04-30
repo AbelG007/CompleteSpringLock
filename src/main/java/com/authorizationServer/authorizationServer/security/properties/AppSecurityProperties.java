@@ -1,4 +1,4 @@
-package com.authorizationServer.authorizationServer.config;
+package com.authorizationServer.authorizationServer.security.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
