@@ -1,4 +1,4 @@
-package com.authorizationServer.authorizationServer.model;
+package com.authorizationServer.authorizationServer.customer.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
