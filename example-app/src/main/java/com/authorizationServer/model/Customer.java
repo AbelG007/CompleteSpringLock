@@ -36,7 +36,7 @@ public class Customer {
     @JsonIgnore
     private Date createDt;
 
-    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private Set<Authority> authorities;
 }

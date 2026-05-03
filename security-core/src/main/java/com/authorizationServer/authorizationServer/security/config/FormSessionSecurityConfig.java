@@ -23,8 +23,12 @@ public class FormSessionSecurityConfig {
     @Order(0)
     SecurityFilterChain formSecurityFilterChain (HttpSecurity httpSecurity){
         httpSecurity
-                .authorizeHttpRequests(http -> http.anyRequest().authenticated())
-                .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
+                .authorizeHttpRequests(http -> http
+                        .requestMatchers("/login-success.html").permitAll()
+                        .anyRequest().authenticated())
+                .formLogin(formLogin -> formLogin
+                        .defaultSuccessUrl("/login-success.html", false)
+                        .permitAll())
                 .csrf(Customizer.withDefaults())
                 .logout(Customizer.withDefaults());
         return httpSecurity.build();

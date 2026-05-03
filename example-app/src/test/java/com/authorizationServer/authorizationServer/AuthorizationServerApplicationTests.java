@@ -2,6 +2,7 @@ package com.authorizationServer.authorizationServer;
 
 import com.authorizationServer.authorizationServer.security.properties.AppSecurityProperties;
 import com.authorizationServer.authorizationServer.security.properties.SecurityMode;
+import com.authorizationServer.repository.CustomerRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +17,9 @@ class AuthorizationServerApplicationTests {
 	@Autowired
 	private AppSecurityProperties appSecurityProperties;
 
+	@Autowired
+	private CustomerRepository customerRepository;
+
 	@Test
 	void contextLoads() {
 	}
@@ -24,6 +28,11 @@ class AuthorizationServerApplicationTests {
 	void appSecurityPropertiesBind() {
 		assertThat(appSecurityProperties.isEnabled()).isTrue();
 		assertThat(appSecurityProperties.getMode()).isEqualTo(SecurityMode.AUTHORIZATION_SERVER);
+	}
+
+	@Test
+	void bootstrapUserIsSeeded() {
+		assertThat(customerRepository.findByEmail("bootstrap@example.com")).isPresent();
 	}
 
 }
