@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: resourceServerApp
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+server:
+  port: 8082
+
+app-security:
+  enabled: true
+  mode: JWT_RESOURCE_SERVER
+  jwt-resource-server:
+    issuer-uri: http://127.0.0.1:9000
+    admin-path: /api/admin/**
