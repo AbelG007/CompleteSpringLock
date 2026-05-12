@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Signed In</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            display: grid;
+            place-items: center;
+        }
+        .shell {
+            width: min(840px, calc(100vw - 32px));
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 32px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+        }
+        h1 {
+            margin: 0 0 12px;
+            font-size: 28px;
+        }
+        p, li {
+            line-height: 1.6;
+            color: #475569;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+        .links {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        a.btn {
+            display: inline-block;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: #0f172a;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        a.btn.secondary {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body>
+<main class="shell">
+    <h1>Signed in</h1>
+    <p>You are authenticated as <code th:text="${displayName}">user</code>.</p>
+    <p>Principal type: <code th:text="${principalType}">OAuth2User</code></p>
+
+    <h2>Authorities</h2>
+    <ul>
+        <li th:each="authority : ${authorities}" th:text="${authority.authority}">ROLE_USER</li>
+    </ul>
+
+    <h2>Claims</h2>
+    <ul>
+        <li th:each="entry : ${attributes.entrySet()}">
+            <strong th:text="${entry.key}">key</strong>:
+            <span th:text="${entry.value}">value</span>
+        </li>
+    </ul>
+
+    <div class="links">
+        <a class="btn secondary" href="/">Back home</a>
+        <a class="btn" href="/logout">Logout</a>
+    </div>
+</main>
+</body>
+</html>

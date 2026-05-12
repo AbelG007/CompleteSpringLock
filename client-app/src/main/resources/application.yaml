@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: clientApp
+
+server:
+  port: 8081
+
+client-app:
+  authorization-server:
+    authorization-uri: http://127.0.0.1:9000/oauth2/authorize
+    token-uri: http://127.0.0.1:9000/oauth2/token
+    jwk-set-uri: http://127.0.0.1:9000/oauth2/jwks
+    user-info-uri: http://127.0.0.1:9000/userinfo
+    user-name-attribute: sub
+  registration:
+    registration-id: demo-client
+    client-id: demo-client
+    client-secret: demo-client-secret
+    client-authentication-method: client_secret_basic
+    authorization-grant-type: authorization_code
+    redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+    scopes:
+      - openid
+      - profile
+      - email
+      - read
+
+logging:
+  level:
+    org.springframework.security: INFO

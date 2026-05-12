@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OAuth Client</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            display: grid;
+            place-items: center;
+        }
+        .shell {
+            width: min(720px, calc(100vw - 32px));
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 32px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+        }
+        h1 {
+            margin: 0 0 12px;
+            font-size: 30px;
+        }
+        p {
+            margin: 0 0 16px;
+            line-height: 1.6;
+            color: #475569;
+        }
+        a.btn {
+            display: inline-block;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: #0f172a;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+<main class="shell">
+    <h1>OAuth Client App</h1>
+    <p>This app uses the authorization server on port 9000.</p>
+    <p>Open your protected profile page to start the login round-trip.</p>
+    <a class="btn" href="/me">Open protected profile</a>
+</main>
+</body>
+</html>

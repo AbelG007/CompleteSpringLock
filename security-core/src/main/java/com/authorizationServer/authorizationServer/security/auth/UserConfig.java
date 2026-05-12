@@ -4,6 +4,7 @@ import com.authorizationServer.authorizationServer.security.properties.FormSessi
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class UserConfig { // Renamed to avoid conflict
 
     private final FormSessionUserProperties formSessionUserProperties;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -27,9 +29,8 @@ public class UserConfig { // Renamed to avoid conflict
                 ? new String[]{"USER"}
                 : formSessionUserProperties.getRoles().toArray(new String[0]);
 
-        UserDetails user = User.withDefaultPasswordEncoder()
-                .username(formSessionUserProperties.getUsername())
-                .password(formSessionUserProperties.getPassword())
+        UserDetails user = User.withUsername(formSessionUserProperties.getUsername())
+                .password(passwordEncoder.encode(formSessionUserProperties.getPassword()))
                 .roles(roles)
                 .build();
 

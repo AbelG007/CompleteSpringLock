@@ -36,6 +36,7 @@
 		<module>security-autoconfigure</module>
 		<module>example-app</module>
 		<module>resource-server-app</module>
+		<module>client-app</module>
 	</modules>
 
 </project>
