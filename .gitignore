@@ -32,3 +32,4 @@ build/
 
 ### VS Code ###
 .vscode/
+/example-app/src/main/resources/auth-server.p12

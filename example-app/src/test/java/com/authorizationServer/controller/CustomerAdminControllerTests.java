@@ -54,8 +54,7 @@ class CustomerAdminControllerTests {
 
         mockMvc.perform(get("/api/admin/customers"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].email").value(hasItem("alice@example.com")))
-                .andExpect(jsonPath("$[*].email").value(hasItem("bootstrap@example.com")));
+                .andExpect(jsonPath("$[*].email").value(hasItem("alice@example.com")));
 
         mockMvc.perform(get("/api/admin/customers/alice@example.com"))
                 .andExpect(status().isOk())

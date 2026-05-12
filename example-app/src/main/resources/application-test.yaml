@@ -12,3 +12,29 @@ spring:
 app:
   authorization-server:
     issuer: http://127.0.0.1:9000
+
+app-security:
+  key-store:
+    path: classpath:auth-server.p12
+    password: admin123
+    alias: auth-server
+  bootstrap-user:
+    enabled: false
+  authorization-server:
+    clients:
+      - client-id: test-client
+        client-secret: test-client-secret
+        client-name: Test Client
+        authentication-methods:
+          - client_secret_basic
+        authorization-grant-types:
+          - authorization_code
+          - refresh_token
+        redirect-uris:
+          - http://127.0.0.1:8081/login/oauth2/code/test-client
+        scopes:
+          - openid
+          - profile
+          - email
+          - read
+        require-authorization-consent: false

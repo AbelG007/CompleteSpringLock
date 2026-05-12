@@ -6,11 +6,9 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jose.util.Resource;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -18,6 +16,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import com.authorizationServer.authorizationServer.security.properties.KeyStoreProperties;
 
 import java.io.InputStream;
 import java.security.KeyPair;
@@ -38,18 +37,11 @@ import java.util.stream.Collectors;
         matchIfMissing = true
 )
 public class TokenSecurityConfig {
+    private final KeyStoreProperties keyStoreProperties;
 
-
-    @Value("${app-security.key-store.path}")
-    private String keyStorePath;
-
-    @Value("${app-security.key-store.password}")
-    private String keyStorePassword;
-
-    @Value("${app-security.key-store.alias}")
-    private String keyAlias;
-
-
+    public TokenSecurityConfig(KeyStoreProperties keyStoreProperties) {
+        this.keyStoreProperties = keyStoreProperties;
+    }
 
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer() {
@@ -90,16 +82,21 @@ public class TokenSecurityConfig {
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() throws Exception {
-        // Load the KeyStore file
-        ClassPathResource classPathResource = new ClassPathResource(keyStorePath);
+        if (keyStoreProperties.getPath() == null) {
+            throw new IllegalStateException("app-security.key-store.path must be configured");
+        }
+        if (keyStoreProperties.getPassword() == null) {
+            throw new IllegalStateException("app-security.key-store.password must be configured");
+        }
+        if (keyStoreProperties.getAlias() == null) {
+            throw new IllegalStateException("app-security.key-store.alias must be configured");
+        }
 
-
-
-        try (InputStream keyStoreInputStream = classPathResource.getInputStream()){
+        try (InputStream keyStoreInputStream = keyStoreProperties.getPath().getInputStream()) {
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
-            keyStore.load(keyStoreInputStream, keyStorePassword.toCharArray());
+            keyStore.load(keyStoreInputStream, keyStoreProperties.getPassword().toCharArray());
             // Extract the RSA Key from the Store
-            RSAKey rsaKey = RSAKey.load(keyStore, keyAlias, keyStorePassword.toCharArray());
+            RSAKey rsaKey = RSAKey.load(keyStore, keyStoreProperties.getAlias(), keyStoreProperties.getPassword().toCharArray());
             // Return the immutable set (now based on a file, not a random generator)
             JWKSet jwkSet = new JWKSet(rsaKey);
             return new ImmutableJWKSet<>(jwkSet);

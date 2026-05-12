@@ -13,3 +13,29 @@ spring:
 app:
   authorization-server:
     issuer: ${AUTH_SERVER_ISSUER}
+
+app-security:
+  key-store:
+    path: ${KEYSTORE_LOCATION}
+    password: ${KEYSTORE_PASSWORD}
+    alias: ${KEYSTORE_ALIAS}
+  bootstrap-user:
+    enabled: false
+  authorization-server:
+    clients:
+      - client-id: ${CLIENT_ID}
+        client-secret: ${CLIENT_SECRET}
+        client-name: ${CLIENT_NAME}
+        authentication-methods:
+          - client_secret_basic
+        authorization-grant-types:
+          - authorization_code
+          - refresh_token
+        redirect-uris:
+          - ${CLIENT_REDIRECT_URI}
+        scopes:
+          - openid
+          - profile
+          - email
+          - read
+        require-authorization-consent: false

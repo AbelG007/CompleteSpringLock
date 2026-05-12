@@ -8,3 +8,46 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: ${JPA_SHOW_SQL:true}
+
+app:
+  authorization-server:
+    issuer: http://127.0.0.1:9000
+
+app-security:
+  key-store:
+    path: classpath:auth-server.p12
+    password: admin123
+    alias: auth-server
+  bootstrap-user:
+    enabled: true
+    name: Bootstrap Admin
+    email: bootstrap@example.com
+    mobile-number: 9999999999
+    password: password123
+    role: ROLE_USER
+    authorities:
+      - ROLE_USER
+  authorization-server:
+    clients:
+      - client-id: demo-client
+        client-secret: demo-client-secret
+        client-name: Demo Client
+        authentication-methods:
+          - client_secret_basic
+        authorization-grant-types:
+          - authorization_code
+          - refresh_token
+        redirect-uris:
+          - http://127.0.0.1:8081/login/oauth2/code/demo-client
+        scopes:
+          - openid
+          - profile
+          - email
+          - read
+        require-authorization-consent: false
+  form-session:
+    user:
+      username: admin
+      password: password123
+      roles:
+        - USER

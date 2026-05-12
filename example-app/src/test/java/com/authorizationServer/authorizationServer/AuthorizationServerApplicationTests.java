@@ -32,7 +32,7 @@ class AuthorizationServerApplicationTests {
 
 	@Test
 	void bootstrapUserIsSeeded() {
-		assertThat(customerRepository.findByEmail("bootstrap@example.com")).isPresent();
+		assertThat(customerRepository.findByEmail("bootstrap@example.com")).isEmpty();
 	}
 
 }

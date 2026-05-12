@@ -10,7 +10,7 @@ import java.util.List;
 @ConfigurationProperties(prefix = "app-security.bootstrap-user")
 public class BootstrapUserProperties {
 
-    private boolean enabled = true;
+    private boolean enabled = false;
 
     private String name;
 
